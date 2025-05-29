@@ -19,8 +19,9 @@ const FloorplanCanvas: React.FC = () => {
   const stageRef = useRef<KonvaStage>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  console.log({ appState, uiState });
 
-  const [floorplanImage] = useImage(appState.floorplanImageUrl || '');
+  const [floorplanImage] = useImage(appState?.floorplanImageUrl || '');
 
   // Handle container resize
   useEffect(() => {
@@ -39,7 +40,7 @@ const FloorplanCanvas: React.FC = () => {
   // Handle keyboard shortcuts for calibration
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!appState.isCalibrating) return;
+      if (!appState?.isCalibrating) return;
 
       switch (e.key) {
         case '+':
@@ -64,7 +65,7 @@ const FloorplanCanvas: React.FC = () => {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [
-    appState.isCalibrating,
+    appState?.isCalibrating,
     handleImageScale,
     handleImageRotation,
     handleCalibrationComplete,
@@ -73,7 +74,7 @@ const FloorplanCanvas: React.FC = () => {
 
   // Calculate grid size in pixels based on scale ratio and grid size
   const getGridSizeInPixels = () => {
-    const baseGridSize = appState.scaleRatio || 50; // Default to 50 pixels per foot if not set
+    const baseGridSize = appState?.scaleRatio || 50;
     return baseGridSize * GRID_SIZES[uiState.gridSizeIndex];
   };
 
@@ -95,8 +96,8 @@ const FloorplanCanvas: React.FC = () => {
           {floorplanImage && (
             <KonvaImage
               image={floorplanImage}
-              scale={{ x: appState.imageScale, y: appState.imageScale }}
-              rotation={appState.imageRotation}
+              scale={{ x: appState?.imageScale || 1, y: appState?.imageScale || 1 }}
+              rotation={appState?.imageRotation || 0}
               x={dimensions.width / 2}
               y={dimensions.height / 2}
               offsetX={floorplanImage.width / 2}
@@ -144,8 +145,8 @@ const FloorplanCanvas: React.FC = () => {
           <Text
             x={20}
             y={20}
-            text={`Image Scale: ${appState.imageScale.toFixed(1)}x
-Grid Scale: ${appState.scaleRatio || 50} px/ft
+            text={`Image Scale: ${appState?.imageScale?.toFixed(1)}x
+Grid Scale: ${appState?.scaleRatio || 50} px/ft
 Grid Size: ${GRID_SIZES[uiState.gridSizeIndex]} ft
 (1 grid square = 1 foot)`}
             fontSize={14}

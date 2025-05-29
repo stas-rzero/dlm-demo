@@ -2,8 +2,8 @@ import React, { createContext } from 'react';
 import { FloorplanAppState, AppUIState } from '../types';
 
 interface FloorplanContextType {
-  appState: FloorplanAppState;
-  setAppState: React.Dispatch<React.SetStateAction<FloorplanAppState>>;
+  appState: FloorplanAppState | null;
+  setAppState: React.Dispatch<React.SetStateAction<FloorplanAppState | null>>;
   uiState: AppUIState;
   setUIState: React.Dispatch<React.SetStateAction<AppUIState>>;
   handleImageUpload: (file: File) => void;

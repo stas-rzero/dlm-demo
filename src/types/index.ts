@@ -43,7 +43,7 @@ export interface FloorplanAppState {
   floorplanImageUrl: string | null;
   imageScale: number; // Scale of the floorplan image
   imageRotation: number; // Rotation of the floorplan image in degrees
-  scaleRatio: number | null; // Pixels per foot ratio
+  scaleRatio: number; // Pixels per foot ratio
   devices: DeviceOrPlaceholder[];
   unassignedDevices: Device[];
   selectedElementId: string | null;

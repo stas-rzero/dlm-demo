@@ -2,10 +2,10 @@ import { FloorplanAppState } from '../types';
 
 export const planningMockState: FloorplanAppState = {
   mode: 'planning',
-  floorplanImageUrl: '/floorplans/floorplan_1.png',
-  imageScale: 1.0,
+  floorplanImageUrl: 'floorplans/floorplan_1.png',
+  imageScale: 0.5,
   imageRotation: 0,
-  scaleRatio: 0.5,
+  scaleRatio: 50,
   devices: [
     {
       id: 'placeholder-hub-1',
@@ -34,10 +34,10 @@ export const planningMockState: FloorplanAppState = {
 
 export const viewMockState: FloorplanAppState = {
   mode: 'view',
-  floorplanImageUrl: '/floorplans/floorplan_1.png',
-  imageScale: 1.0,
+  floorplanImageUrl: 'floorplans/floorplan_1.png',
+  imageScale: 1,
   imageRotation: 0,
-  scaleRatio: 0.5,
+  scaleRatio: 50,
   devices: [
     {
       id: 'device-1',
@@ -84,10 +84,10 @@ export const viewMockState: FloorplanAppState = {
 
 export const editMockState: FloorplanAppState = {
   mode: 'edit',
-  floorplanImageUrl: '/floorplans/floorplan_1.png',
-  imageScale: 1.0,
+  floorplanImageUrl: 'floorplans/floorplan_1.png',
+  imageScale: 1,
   imageRotation: 0,
-  scaleRatio: 0.5,
+  scaleRatio: 50,
   devices: [
     {
       id: 'device-1',

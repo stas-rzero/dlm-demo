@@ -7,20 +7,7 @@ interface FloorplanProviderProps {
 }
 
 export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }) => {
-  const [appState, setAppState] = useState<FloorplanAppState>({
-    mode: 'planning',
-    floorplanImageUrl: null,
-    imageScale: 1,
-    imageRotation: 0,
-    scaleRatio: null,
-    devices: [],
-    unassignedDevices: [],
-    selectedElementId: null,
-    currentTypeToPlace: null,
-    currentUnassignedDeviceIdToPlace: null,
-    isMeasuring: false,
-    isCalibrating: false,
-  });
+  const [appState, setAppState] = useState<FloorplanAppState | null>(null);
 
   const [uiState, setUIState] = useState<AppUIState>({
     showLeftPanel: false,
@@ -32,23 +19,33 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
   });
 
   useEffect(() => {
-    setUIState(prev => ({
-      ...prev,
-      showRightPanel: !!appState.selectedElementId,
-    }));
-  }, [appState.selectedElementId]);
+    if (appState?.selectedElementId) {
+      setUIState(prev => ({
+        ...prev,
+        showRightPanel: true,
+      }));
+    } else {
+      setUIState(prev => ({
+        ...prev,
+        showRightPanel: false,
+      }));
+    }
+  }, [appState?.selectedElementId]);
 
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
-      setAppState(prev => ({
-        ...prev,
-        floorplanImageUrl: reader.result as string,
-        imageScale: 1,
-        imageRotation: 0,
-        scaleRatio: null,
-        isCalibrating: true,
-      }));
+      setAppState(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          floorplanImageUrl: reader.result as string,
+          imageScale: 1,
+          imageRotation: 0,
+          scaleRatio: 50,
+          isCalibrating: true,
+        };
+      });
       setUIState(prev => ({
         ...prev,
         zoomLevel: 1,
@@ -59,27 +56,37 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
   };
 
   const handleImageScale = (delta: number) => {
-    if (uiState.imageLocked) return;
+    if (!appState || uiState.imageLocked) return;
     const newImageScale = Math.min(Math.max(appState.imageScale + delta, 0.1), 3);
-    setAppState(prev => ({
-      ...prev,
-      imageScale: newImageScale,
-    }));
+    setAppState(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        imageScale: newImageScale,
+      };
+    });
   };
 
   const handleImageRotation = (delta: number) => {
+    if (!appState) return;
     const newRotation = (appState.imageRotation + delta) % 360;
-    setAppState(prev => ({
-      ...prev,
-      imageRotation: newRotation,
-    }));
+    setAppState(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        imageRotation: newRotation,
+      };
+    });
   };
 
   const handleCalibrationComplete = () => {
-    setAppState(prev => ({
-      ...prev,
-      isCalibrating: false,
-    }));
+    setAppState(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        isCalibrating: false,
+      };
+    });
     setUIState(prev => ({
       ...prev,
       imageLocked: true,
