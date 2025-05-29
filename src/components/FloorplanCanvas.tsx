@@ -3,7 +3,7 @@ import { Stage, Layer, Image as KonvaImage, Line, Text } from 'react-konva';
 import useImage from 'use-image';
 import { Stage as KonvaStage } from 'konva/lib/Stage';
 import { GRID_SIZES } from '../types';
-import { useFloorplan } from '../context/FloorplanContext';
+import { useFloorplan } from '../context/useFloorplan';
 
 const FloorplanCanvas: React.FC = () => {
   const {

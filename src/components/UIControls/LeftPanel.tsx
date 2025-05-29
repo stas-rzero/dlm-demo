@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFloorplan } from '../../context/FloorplanContext';
+import { useFloorplan } from '../../context/useFloorplan';
 
 const LeftPanel: React.FC = () => {
   const { appState, setAppState } = useFloorplan();

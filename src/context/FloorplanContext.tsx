@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { FloorplanAppState, AppUIState } from '../types';
 
 interface FloorplanContextType {
@@ -13,15 +13,7 @@ interface FloorplanContextType {
   handleZoom: (delta: number) => void;
 }
 
-const FloorplanContext = createContext<FloorplanContextType | undefined>(undefined);
-
-export const useFloorplan = () => {
-  const context = useContext(FloorplanContext);
-  if (context === undefined) {
-    throw new Error('useFloorplan must be used within a FloorplanProvider');
-  }
-  return context;
-};
+export const FloorplanContext = createContext<FloorplanContextType | undefined>(undefined);
 
 interface FloorplanProviderProps {
   children: ReactNode;

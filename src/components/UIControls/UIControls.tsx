@@ -4,7 +4,7 @@ import ViewControls from './ViewControls';
 import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
 import CalibrationControls from './CalibrationControls';
-import { useFloorplan } from '../../context/FloorplanContext';
+import { useFloorplan } from '../../context/useFloorplan';
 
 const UIControls: React.FC = () => {
   const { appState, uiState } = useFloorplan();

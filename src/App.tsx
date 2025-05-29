@@ -2,7 +2,8 @@ import React from 'react';
 import FloorplanCanvas from './components/FloorplanCanvas';
 import FloorplanUpload from './components/FloorplanUpload';
 import UIControls from './components/UIControls';
-import { FloorplanProvider, useFloorplan } from './context/FloorplanContext';
+import { FloorplanProvider } from './context/FloorplanContext';
+import { useFloorplan } from './context/useFloorplan';
 
 const FloorplanApp: React.FC = () => {
   const { appState } = useFloorplan();

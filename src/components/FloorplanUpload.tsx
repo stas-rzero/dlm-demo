@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useFloorplan } from '../context/FloorplanContext';
+import { useFloorplan } from '../context/useFloorplan';
 
 const FloorplanUpload: React.FC = () => {
   const { handleImageUpload } = useFloorplan();

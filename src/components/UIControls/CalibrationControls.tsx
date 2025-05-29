@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFloorplan } from '../../context/FloorplanContext';
+import { useFloorplan } from '../../context/useFloorplan';
 
 const CalibrationControls: React.FC = () => {
   const {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GRID_SIZES } from '../../types';
-import { useFloorplan } from '../../context/FloorplanContext';
+import { useFloorplan } from '../../context/useFloorplan';
 
 const ViewControls: React.FC = () => {
   const { uiState, setUIState, handleZoom } = useFloorplan();
