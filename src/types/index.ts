@@ -2,8 +2,8 @@ export type Mode = 'planning' | 'view' | 'edit';
 
 export type DeviceType =
   | 'hub'
-  | 'eec'               // exit/entry counter
-  | 'counter'           // area counter
+  | 'eec' // exit/entry counter
+  | 'counter' // area counter
   | 'desk_occupancy'
   | 'room_occupancy'
   | 'iaq';
@@ -38,8 +38,9 @@ export type DeviceOrPlaceholder = PlaceholderDevice | Device;
 export interface FloorplanAppState {
   mode: Mode;
   floorplanImageUrl: string | null;
-  scaleRatio: number | null;
-  zoomLevel: number;
+  imageScale: number; // Scale of the floorplan image
+  imageRotation: number; // Rotation of the floorplan image in degrees
+  scaleRatio: number | null; // Pixels per foot ratio
   devices: DeviceOrPlaceholder[];
   unassignedDevices: Device[];
   selectedElementId: string | null;
@@ -56,7 +57,8 @@ export interface FloorplanAppState {
 export interface AppUIState {
   showLeftPanel: boolean;
   showRightPanel: boolean;
-  imageScale: number;
+  zoomLevel: number; // UI zoom level, resets to 1 on app restart
   imageLocked: boolean;
   isCalibrating: boolean;
+  gridSize: number; // Grid size in feet (0.5, 1, 2, 5, 10)
 }

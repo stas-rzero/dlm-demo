@@ -3,8 +3,9 @@ import { FloorplanAppState } from '../types';
 export const planningMockState: FloorplanAppState = {
   mode: 'planning',
   floorplanImageUrl: '/floorplans/floorplan_1.png',
+  imageScale: 1.0,
+  imageRotation: 0,
   scaleRatio: 0.5,
-  zoomLevel: 1.0,
   devices: [
     {
       id: 'placeholder-hub-1',
@@ -34,8 +35,9 @@ export const planningMockState: FloorplanAppState = {
 export const viewMockState: FloorplanAppState = {
   mode: 'view',
   floorplanImageUrl: '/floorplans/floorplan_1.png',
+  imageScale: 1.0,
+  imageRotation: 0,
   scaleRatio: 0.5,
-  zoomLevel: 1.0,
   devices: [
     {
       id: 'device-1',
@@ -83,8 +85,9 @@ export const viewMockState: FloorplanAppState = {
 export const editMockState: FloorplanAppState = {
   mode: 'edit',
   floorplanImageUrl: '/floorplans/floorplan_1.png',
+  imageScale: 1.0,
+  imageRotation: 0,
   scaleRatio: 0.5,
-  zoomLevel: 1.0,
   devices: [
     {
       id: 'device-1',

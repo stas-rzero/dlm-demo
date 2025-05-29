@@ -1,9 +1,10 @@
-import React from "react";
-import Toolbar from "./Toolbar";
-import ViewControls from "./ViewControls";
-import LeftPanel from "./LeftPanel";
-import RightPanel from "./RightPanel";
-import { FloorplanAppState, AppUIState } from "../../types";
+import React from 'react';
+import Toolbar from './Toolbar';
+import ViewControls from './ViewControls';
+import LeftPanel from './LeftPanel';
+import RightPanel from './RightPanel';
+import CalibrationControls from './CalibrationControls';
+import { FloorplanAppState, AppUIState } from '../../types';
 
 type Props = {
   state: FloorplanAppState;
@@ -12,7 +13,9 @@ type Props = {
   onUIStateChange: (newState: AppUIState) => void;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onImageResize: (delta: number) => void;
+  onImageRotation: (delta: number) => void;
   onZoom: (delta: number) => void;
+  onCalibrationComplete: () => void;
 };
 
 const UIControls: React.FC<Props> = ({
@@ -22,51 +25,68 @@ const UIControls: React.FC<Props> = ({
   onUIStateChange,
   onImageUpload,
   onImageResize,
+  onImageRotation,
   onZoom,
+  onCalibrationComplete,
 }) => {
   return (
     <>
-      {/* Top toolbar area - full width with left-aligned controls */}
-      <div className="absolute top-0 left-0 right-0 h-[64px] p-4 pointer-events-auto">
-        <div className="flex justify-start gap-4 h-full items-center">
-          <Toolbar
-            state={state}
-            onStateChange={onStateChange}
-            onImageUpload={onImageUpload}
-            onImageResize={onImageResize}
-            onLockImage={() => onUIStateChange({ ...uiState, imageLocked: true })}
-            onCalibrate={() => onUIStateChange({ ...uiState, isCalibrating: true })}
-            imageLocked={uiState.imageLocked}
-            uiState={uiState}
-            onUIStateChange={onUIStateChange}
-          />
-        </div>
-      </div>
-
-      {/* View controls in bottom right corner */}
-      <div className="absolute bottom-4 right-4 pointer-events-auto">
-        <ViewControls
+      {state.isCalibrating ? (
+        <CalibrationControls
           state={state}
+          uiState={uiState}
           onStateChange={onStateChange}
-          onZoom={onZoom}
+          onUIStateChange={onUIStateChange}
+          onImageScale={onImageResize}
+          onImageRotation={onImageRotation}
+          onCalibrationComplete={onCalibrationComplete}
         />
-      </div>
+      ) : (
+        <>
+          {/* Top toolbar area - full width with left-aligned controls */}
+          <div className="pointer-events-auto absolute top-0 right-0 left-0 h-[64px] p-4">
+            <div className="flex h-full items-center justify-start gap-4">
+              <Toolbar
+                state={state}
+                onStateChange={onStateChange}
+                onImageUpload={onImageUpload}
+                onImageResize={onImageResize}
+                onLockImage={() => onUIStateChange({ ...uiState, imageLocked: true })}
+                onCalibrate={() => onUIStateChange({ ...uiState, isCalibrating: true })}
+                imageLocked={uiState.imageLocked}
+                uiState={uiState}
+                onUIStateChange={onUIStateChange}
+              />
+            </div>
+          </div>
 
-      {/* Left panel */}
-      {uiState.showLeftPanel && (
-        <div className="absolute top-[64px] left-0 bottom-0 pointer-events-auto">
-          <LeftPanel state={state} onStateChange={onStateChange} />
-        </div>
-      )}
+          {/* View controls in bottom right corner */}
+          <div className="pointer-events-auto absolute right-4 bottom-4">
+            <ViewControls
+              state={state}
+              uiState={uiState}
+              onUIStateChange={onUIStateChange}
+              onZoom={onZoom}
+            />
+          </div>
 
-      {/* Right panel */}
-      {uiState.showRightPanel && (
-        <div className="absolute top-[64px] right-0 bottom-0 pointer-events-auto">
-          <RightPanel state={state} onStateChange={onStateChange} />
-        </div>
+          {/* Left panel */}
+          {uiState.showLeftPanel && (
+            <div className="pointer-events-auto absolute top-[64px] bottom-0 left-0">
+              <LeftPanel state={state} onStateChange={onStateChange} />
+            </div>
+          )}
+
+          {/* Right panel */}
+          {uiState.showRightPanel && (
+            <div className="pointer-events-auto absolute top-[64px] right-0 bottom-0">
+              <RightPanel state={state} onStateChange={onStateChange} />
+            </div>
+          )}
+        </>
       )}
     </>
   );
 };
 
-export default UIControls; 
+export default UIControls;

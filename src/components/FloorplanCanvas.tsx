@@ -1,38 +1,32 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Stage, Layer, Image as KonvaImage, Line, Circle, Text } from "react-konva";
-import useImage from "use-image";
-import { Stage as KonvaStage } from "konva/lib/Stage";
-import { FloorplanAppState } from "../types";
+import React, { useRef, useState, useEffect } from 'react';
+import { Stage, Layer, Image as KonvaImage, Line, Text } from 'react-konva';
+import useImage from 'use-image';
+import { Stage as KonvaStage } from 'konva/lib/Stage';
+import { FloorplanAppState, AppUIState } from '../types';
 
 type Props = {
   state: FloorplanAppState;
-  onStateChange: (newState: FloorplanAppState) => void;
-  imageScale: number;
-  setImageScale: (scale: number) => void;
-  imageLocked: boolean;
-  setImageLocked: (locked: boolean) => void;
-  isCalibrating: boolean;
-  setIsCalibrating: (calibrating: boolean) => void;
+  uiState: AppUIState;
+  onUIStateChange: (newState: AppUIState) => void;
+  onImageScale: (delta: number) => void;
+  onImageRotation: (delta: number) => void;
+  onCalibrationComplete: () => void;
 };
 
 const FloorplanCanvas: React.FC<Props> = ({
   state,
-  onStateChange,
-  imageScale,
-  setImageScale,
-  imageLocked,
-  setImageLocked,
-  isCalibrating,
-  setIsCalibrating,
+  uiState,
+  onUIStateChange,
+  onImageScale,
+  onImageRotation,
+  onCalibrationComplete,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<KonvaStage>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [calibrationPoints, setCalibrationPoints] = useState<[number, number][]>([]);
 
-  const [floorplanImage] = useImage(state.floorplanImageUrl || "");
+  const [floorplanImage] = useImage(state.floorplanImageUrl || '');
 
   // Handle container resize
   useEffect(() => {
@@ -48,122 +42,126 @@ const FloorplanCanvas: React.FC<Props> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  const handleStageClick = () => {
-    if (!isCalibrating) return;
-
-    const stage = stageRef.current;
-    if (!stage) return;
-    
-    const pointerPos = stage.getPointerPosition();
-    if (!pointerPos) return;
-
-    const newPoints = [...calibrationPoints, [pointerPos.x, pointerPos.y]];
-
-    if (newPoints.length === 2) {
-      // Compute pixel distance
-      const [a, b] = newPoints;
-      const pixelDist = Math.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2);
-
-      const feet = parseFloat(prompt(`Pixel distance: ${pixelDist.toFixed(1)}. Enter distance in feet:`) || "");
-      if (!isNaN(feet) && feet > 0) {
-        const newScaleRatio = feet / pixelDist;
-        onStateChange({
-          ...state,
-          scaleRatio: newScaleRatio,
-        });
-      }
-
-      setCalibrationPoints([]);
-      setIsCalibrating(false);
-    } else {
-      setCalibrationPoints(newPoints as [number, number][]);
-    }
-  };
-
-  // Escape key to exit calibration mode
+  // Handle keyboard shortcuts for calibration
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setCalibrationPoints([]);
-        setIsCalibrating(false);
+      if (!state.isCalibrating) return;
+
+      switch (e.key) {
+        case '+':
+        case '=':
+          onImageScale(0.1);
+          break;
+        case '-':
+          onImageScale(-0.1);
+          break;
+        case 'r':
+          onImageRotation(90);
+          break;
+        case 'Enter':
+          onCalibrationComplete();
+          break;
+        case 'Escape':
+          onUIStateChange({ ...uiState, isCalibrating: false });
+          break;
       }
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [setIsCalibrating]);
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [
+    state.isCalibrating,
+    onImageScale,
+    onImageRotation,
+    onCalibrationComplete,
+    onUIStateChange,
+    uiState,
+  ]);
+
+  // Calculate grid size in pixels based on scale ratio
+  const getGridSizeInPixels = () => {
+    return state.scaleRatio || 50; // Default to 50 pixels per foot if not set
+  };
 
   return (
-    <div ref={containerRef} className="w-full h-full">
+    <div ref={containerRef} className="h-full w-full">
       <Stage
         ref={stageRef}
         width={dimensions.width}
         height={dimensions.height}
-        scaleX={scale}
-        scaleY={scale}
+        scaleX={uiState.zoomLevel}
+        scaleY={uiState.zoomLevel}
         x={position.x}
         y={position.y}
         draggable
-        onDragMove={(e) => setPosition(e.target.position())}
-        onClick={handleStageClick}
+        onDragMove={e => setPosition(e.target.position())}
         className="bg-white"
       >
         <Layer>
           {floorplanImage && (
-            <KonvaImage image={floorplanImage} scale={{ x: imageScale, y: imageScale }} />
+            <KonvaImage
+              image={floorplanImage}
+              scale={{ x: state.imageScale, y: state.imageScale }}
+              rotation={state.imageRotation}
+              x={dimensions.width / 2}
+              y={dimensions.height / 2}
+              offsetX={floorplanImage.width / 2}
+              offsetY={floorplanImage.height / 2}
+            />
           )}
         </Layer>
         <Layer>
-          {/* Vertical lines */}
-          {Array.from({ length: Math.ceil((dimensions.width * 2) / 50) }).map((_, i) => (
-            <Line
-              key={`v-${i}`}
-              points={[i * 50 - dimensions.width/2, -dimensions.height/2, i * 50 - dimensions.width/2, dimensions.height * 1.5]}
-              stroke="#ddd"
-              strokeWidth={1}
-              dash={[5, 5]}
-            />
-          ))}
-          {/* Horizontal lines */}
-          {Array.from({ length: Math.ceil((dimensions.height * 2) / 50) }).map((_, i) => (
-            <Line
-              key={`h-${i}`}
-              points={[-dimensions.width/2, i * 50 - dimensions.height/2, dimensions.width * 1.5, i * 50 - dimensions.height/2]}
-              stroke="#ddd"
-              strokeWidth={1}
-              dash={[5, 5]}
-            />
-          ))}
+          {/* Grid lines */}
+          {Array.from({ length: Math.ceil((dimensions.width * 2) / getGridSizeInPixels()) }).map(
+            (_, i) => (
+              <Line
+                key={`v-${i}`}
+                points={[
+                  i * getGridSizeInPixels() - dimensions.width / 2,
+                  -dimensions.height / 2,
+                  i * getGridSizeInPixels() - dimensions.width / 2,
+                  dimensions.height * 1.5,
+                ]}
+                stroke="#ddd"
+                strokeWidth={1}
+                dash={[5, 5]}
+              />
+            )
+          )}
+          {Array.from({ length: Math.ceil((dimensions.height * 2) / getGridSizeInPixels()) }).map(
+            (_, i) => (
+              <Line
+                key={`h-${i}`}
+                points={[
+                  -dimensions.width / 2,
+                  i * getGridSizeInPixels() - dimensions.height / 2,
+                  dimensions.width * 1.5,
+                  i * getGridSizeInPixels() - dimensions.height / 2,
+                ]}
+                stroke="#ddd"
+                strokeWidth={1}
+                dash={[5, 5]}
+              />
+            )
+          )}
         </Layer>
 
-        {calibrationPoints.length > 0 && (
-          <Layer>
-            {calibrationPoints.map((pt, i) => (
-              <Circle key={i} x={pt[0]} y={pt[1]} radius={5} fill="red" />
-            ))}
-            {calibrationPoints.length === 2 && (
-              <>
-                <Line
-                  points={[
-                    calibrationPoints[0][0], calibrationPoints[0][1],
-                    calibrationPoints[1][0], calibrationPoints[1][1],
-                  ]}
-                  stroke="black"
-                  strokeWidth={2}
-                />
-                <Text
-                  x={(calibrationPoints[0][0] + calibrationPoints[1][0]) / 2}
-                  y={(calibrationPoints[0][1] + calibrationPoints[1][1]) / 2 - 20}
-                  text={`Distance: ${Math.sqrt(
-                    (calibrationPoints[1][0] - calibrationPoints[0][0]) ** 2 +
-                    (calibrationPoints[1][1] - calibrationPoints[0][1]) ** 2
-                  ).toFixed(1)} px`}
-                  fontSize={14}
-                  fill="black"
-                />
-              </>
-            )}
-          </Layer>
-        )}
+        <Layer>
+          <Text
+            x={20}
+            y={20}
+            text={`Image Scale: ${state.imageScale.toFixed(1)}x
+Grid Scale: ${(state.scaleRatio || 50).toFixed(2)} px/ft
+(1 grid square = 1 foot)`}
+            fontSize={14}
+            fill="black"
+            padding={10}
+            background="#ffffff80"
+            listening={false}
+            perfectDrawEnabled={false}
+            transformsEnabled="position"
+          />
+        </Layer>
       </Stage>
     </div>
   );

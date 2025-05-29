@@ -6,16 +6,11 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     base: '/dlm-demo/',
     plugins: [react(), tailwindcss(), ghPages()],
-    publicDir: 'src/assets',
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
         emptyOutDir: true,
-        sourcemap: true,
-        rollupOptions: {
-            output: {
-                assetFileNames: 'assets/[name][extname]'
-            }
-        }
-    }
+        sourcemap: true
+    },
+    publicDir: 'src/assets'
 });
