@@ -13,10 +13,13 @@ const CalibrationControls: React.FC = () => {
 
   const handleComplete = () => {
     // Update app state
-    setAppState(prev => ({
-      ...prev,
-      isCalibrating: false,
-    }));
+    setAppState(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        isCalibrating: false,
+      };
+    });
     // Update UI state
     setUIState(prev => ({
       ...prev,
@@ -45,7 +48,7 @@ const CalibrationControls: React.FC = () => {
             >
               -
             </button>
-            <span className="text-sm text-gray-800">{appState.imageScale.toFixed(1)}x</span>
+            <span className="text-sm text-gray-800">{appState?.imageScale?.toFixed(1)}x</span>
             <button
               onClick={() => handleImageScale(0.1)}
               className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
@@ -63,12 +66,15 @@ const CalibrationControls: React.FC = () => {
               type="number"
               min="1"
               max="100"
-              value={appState.scaleRatio || 50}
+              value={appState?.scaleRatio || 50}
               onChange={e => {
-                setAppState(prev => ({
-                  ...prev,
-                  scaleRatio: parseInt(e.target.value) || 50,
-                }));
+                setAppState(prev => {
+                  if (!prev) return null;
+                  return {
+                    ...prev,
+                    scaleRatio: parseInt(e.target.value) || 50,
+                  };
+                });
               }}
               className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
@@ -86,7 +92,7 @@ const CalibrationControls: React.FC = () => {
             >
               ↺
             </button>
-            <span className="text-sm text-gray-800">{appState.imageRotation}°</span>
+            <span className="text-sm text-gray-800">{appState?.imageRotation}°</span>
             <button
               onClick={() => handleImageRotation(90)}
               className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
