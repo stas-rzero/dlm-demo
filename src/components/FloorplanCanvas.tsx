@@ -78,6 +78,20 @@ const FloorplanCanvas: React.FC = () => {
     return baseGridSize * GRID_SIZES[uiState.gridSizeIndex];
   };
 
+  // Calculate grid dimensions based on floorplan image size
+  const getGridDimensions = () => {
+    if (!floorplanImage) return { width: dimensions.width * 2, height: dimensions.height * 2 };
+
+    const imageWidth = floorplanImage.width * (appState?.imageScale || 1);
+    const imageHeight = floorplanImage.height * (appState?.imageScale || 1);
+
+    // Add 30% padding to both dimensions
+    return {
+      width: imageWidth * 1.3,
+      height: imageHeight * 1.3,
+    };
+  };
+
   return (
     <div ref={containerRef} className="h-full w-full">
       <Stage
@@ -107,38 +121,37 @@ const FloorplanCanvas: React.FC = () => {
         </Layer>
         <Layer>
           {/* Grid lines */}
-          {Array.from({ length: Math.ceil((dimensions.width * 2) / getGridSizeInPixels()) }).map(
-            (_, i) => (
-              <Line
-                key={`v-${i}`}
-                points={[
-                  i * getGridSizeInPixels() - dimensions.width / 2,
-                  -dimensions.height / 2,
-                  i * getGridSizeInPixels() - dimensions.width / 2,
-                  dimensions.height * 1.5,
-                ]}
-                stroke="#ddd"
-                strokeWidth={1}
-                dash={[5, 5]}
-              />
-            )
-          )}
-          {Array.from({ length: Math.ceil((dimensions.height * 2) / getGridSizeInPixels()) }).map(
-            (_, i) => (
-              <Line
-                key={`h-${i}`}
-                points={[
-                  -dimensions.width / 2,
-                  i * getGridSizeInPixels() - dimensions.height / 2,
-                  dimensions.width * 1.5,
-                  i * getGridSizeInPixels() - dimensions.height / 2,
-                ]}
-                stroke="#ddd"
-                strokeWidth={1}
-                dash={[5, 5]}
-              />
-            )
-          )}
+          {(() => {
+            const gridSize = getGridSizeInPixels();
+            const { width, height } = getGridDimensions();
+
+            return (
+              <>
+                {Array.from({ length: Math.ceil(width / gridSize) }).map((_, i) => (
+                  <Line
+                    key={`v-${i}`}
+                    points={[i * gridSize, -height / 2, i * gridSize, height / 2]}
+                    x={dimensions.width / 2 - width / 2}
+                    y={dimensions.height / 2}
+                    stroke="#ddd"
+                    strokeWidth={1}
+                    dash={[5, 5]}
+                  />
+                ))}
+                {Array.from({ length: Math.ceil(height / gridSize) }).map((_, i) => (
+                  <Line
+                    key={`h-${i}`}
+                    points={[-width / 2, i * gridSize, width / 2, i * gridSize]}
+                    x={dimensions.width / 2}
+                    y={dimensions.height / 2 - height / 2}
+                    stroke="#ddd"
+                    strokeWidth={1}
+                    dash={[5, 5]}
+                  />
+                ))}
+              </>
+            );
+          })()}
         </Layer>
 
         <Layer>
