@@ -2,13 +2,25 @@ import React from 'react';
 import { useFloorplan } from '../../context/useFloorplan';
 
 const Toolbar: React.FC = () => {
-  const { uiState, setUIState } = useFloorplan();
+  const { uiState, setUIState, setAppState } = useFloorplan();
 
   const toggleLeftPanel = () => {
+    const newShowLeftPanel = !uiState.showLeftPanel;
     setUIState(prev => ({
       ...prev,
-      showLeftPanel: !prev.showLeftPanel,
+      showLeftPanel: newShowLeftPanel,
     }));
+
+    // If we're closing the panel, deselect the current device type
+    if (!newShowLeftPanel) {
+      setAppState(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          currentTypeToPlace: null,
+        };
+      });
+    }
   };
 
   return (

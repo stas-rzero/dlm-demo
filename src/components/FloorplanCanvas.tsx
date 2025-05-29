@@ -1,13 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Image as KonvaImage, Line, Text } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Line, Text, Circle } from 'react-konva';
 import useImage from 'use-image';
 import { Stage as KonvaStage } from 'konva/lib/Stage';
-import { GRID_SIZES } from '../types';
+import { KonvaEventObject } from 'konva/lib/Node';
+import { GRID_SIZES, DeviceOrPlaceholder, AVAILABLE_DEVICES } from '../types';
 import { useFloorplan } from '../context/useFloorplan';
 
 const FloorplanCanvas: React.FC = () => {
   const {
     appState,
+    setAppState,
     uiState,
     setUIState,
     handleImageScale,
@@ -19,7 +21,6 @@ const FloorplanCanvas: React.FC = () => {
   const stageRef = useRef<KonvaStage>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  console.log({ appState, uiState });
 
   const [floorplanImage] = useImage(appState?.floorplanImageUrl || '');
 
@@ -40,25 +41,34 @@ const FloorplanCanvas: React.FC = () => {
   // Handle keyboard shortcuts for calibration
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!uiState.isCalibrating) return;
-
-      switch (e.key) {
-        case '+':
-        case '=':
-          handleImageScale(0.1);
-          break;
-        case '-':
-          handleImageScale(-0.1);
-          break;
-        case 'r':
-          handleImageRotation(90);
-          break;
-        case 'Enter':
-          handleCalibrationComplete();
-          break;
-        case 'Escape':
-          setUIState(prev => ({ ...prev, isCalibrating: false }));
-          break;
+      if (uiState.isCalibrating) {
+        switch (e.key) {
+          case '+':
+          case '=':
+            handleImageScale(0.1);
+            break;
+          case '-':
+            handleImageScale(-0.1);
+            break;
+          case 'r':
+            handleImageRotation(90);
+            break;
+          case 'Enter':
+            handleCalibrationComplete();
+            break;
+          case 'Escape':
+            setUIState(prev => ({ ...prev, isCalibrating: false }));
+            break;
+        }
+      } else if (e.key === 'Escape') {
+        // Deselect current device type when Escape is pressed
+        setAppState(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            currentTypeToPlace: null,
+          };
+        });
       }
     };
 
@@ -70,6 +80,7 @@ const FloorplanCanvas: React.FC = () => {
     handleImageRotation,
     handleCalibrationComplete,
     setUIState,
+    setAppState,
   ]);
 
   // Calculate grid size in pixels based on scale ratio and grid size
@@ -92,6 +103,42 @@ const FloorplanCanvas: React.FC = () => {
     };
   };
 
+  const handleStageClick = (e: KonvaEventObject<MouseEvent>) => {
+    if (!appState?.currentTypeToPlace) return;
+
+    const stage = e.target.getStage();
+    if (!stage) return;
+
+    const pointerPosition = stage.getPointerPosition();
+    if (!pointerPosition) return;
+
+    // Get the stage scale
+    const scale = stage.scaleX(); // Both scaleX and scaleY should be the same
+
+    // Calculate the actual position in the stage coordinates
+    const x = (pointerPosition.x - position.x) / scale;
+    const y = (pointerPosition.y - position.y) / scale;
+
+    // Create a new placeholder device
+    const newDevice: DeviceOrPlaceholder = {
+      id: `placeholder-${appState.currentTypeToPlace}-${Date.now()}`,
+      type: appState.currentTypeToPlace,
+      name: AVAILABLE_DEVICES.find(d => d.type === appState.currentTypeToPlace)?.name || '',
+      x,
+      y,
+      placeholder: true,
+    };
+
+    // Add the new device to the state
+    setAppState(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        devices: [...prev.devices, newDevice],
+      };
+    });
+  };
+
   return (
     <div ref={containerRef} className="h-full w-full">
       <Stage
@@ -104,6 +151,7 @@ const FloorplanCanvas: React.FC = () => {
         y={position.y}
         draggable
         onDragMove={e => setPosition(e.target.position())}
+        onClick={handleStageClick}
         className="bg-white"
       >
         <Layer>
@@ -152,6 +200,30 @@ const FloorplanCanvas: React.FC = () => {
               </>
             );
           })()}
+        </Layer>
+
+        {/* Devices Layer */}
+        <Layer>
+          {appState?.devices.map(device => (
+            <Circle
+              key={device.id}
+              x={device.x}
+              y={device.y}
+              radius={5}
+              fill={device.placeholder ? '#3b82f6' : '#10b981'}
+              stroke={appState.selectedElementId === device.id ? '#1d4ed8' : '#059669'}
+              strokeWidth={2}
+              onClick={() =>
+                setAppState(prev => {
+                  if (!prev) return null;
+                  return {
+                    ...prev,
+                    selectedElementId: device.id,
+                  };
+                })
+              }
+            />
+          ))}
         </Layer>
 
         <Layer>

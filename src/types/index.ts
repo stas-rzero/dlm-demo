@@ -11,6 +11,15 @@ export type DeviceType =
 export const GRID_SIZES = [0.5, 1, 2, 5, 10] as const;
 export type GridSize = (typeof GRID_SIZES)[number];
 
+export const AVAILABLE_DEVICES: { type: DeviceType; name: string }[] = [
+  { type: 'hub', name: 'Hub' },
+  { type: 'eec', name: 'Exit/Entry Counter' },
+  { type: 'counter', name: 'Area Counter' },
+  { type: 'desk_occupancy', name: 'Desk Occupancy' },
+  { type: 'room_occupancy', name: 'Room Occupancy' },
+  { type: 'iaq', name: 'IAQ Sensor' },
+];
+
 export interface DeviceBase {
   id: string;
   type: DeviceType;
