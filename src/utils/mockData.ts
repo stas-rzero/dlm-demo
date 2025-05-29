@@ -3,9 +3,9 @@ import { FloorplanAppState } from '../types';
 export const planningMockState: FloorplanAppState = {
   mode: 'planning',
   floorplanImageUrl: 'floorplans/floorplan_1.png',
-  imageScale: 0.5,
+  imageScale: 1,
   imageRotation: 0,
-  scaleRatio: 50,
+  scaleRatio: 12,
   devices: [
     {
       id: 'placeholder-hub-1',
@@ -29,7 +29,6 @@ export const planningMockState: FloorplanAppState = {
   currentTypeToPlace: null,
   currentUnassignedDeviceIdToPlace: null,
   isMeasuring: false,
-  isCalibrating: false,
 };
 
 export const viewMockState: FloorplanAppState = {
@@ -37,7 +36,7 @@ export const viewMockState: FloorplanAppState = {
   floorplanImageUrl: 'floorplans/floorplan_1.png',
   imageScale: 1,
   imageRotation: 0,
-  scaleRatio: 50,
+  scaleRatio: 12,
   devices: [
     {
       id: 'device-1',
@@ -79,7 +78,6 @@ export const viewMockState: FloorplanAppState = {
   currentTypeToPlace: null,
   currentUnassignedDeviceIdToPlace: null,
   isMeasuring: false,
-  isCalibrating: false,
 };
 
 export const editMockState: FloorplanAppState = {
@@ -87,7 +85,7 @@ export const editMockState: FloorplanAppState = {
   floorplanImageUrl: 'floorplans/floorplan_1.png',
   imageScale: 1,
   imageRotation: 0,
-  scaleRatio: 50,
+  scaleRatio: 12,
   devices: [
     {
       id: 'device-1',
@@ -130,7 +128,6 @@ export const editMockState: FloorplanAppState = {
   currentTypeToPlace: null,
   currentUnassignedDeviceIdToPlace: null,
   isMeasuring: false,
-  isCalibrating: false,
   editSnapshot: {
     devices: [],
     unassignedDevices: [],

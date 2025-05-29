@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Image as KonvaImage, Line, Text, Circle } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Line, Text } from 'react-konva';
 import useImage from 'use-image';
 import { Stage as KonvaStage } from 'konva/lib/Stage';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { GRID_SIZES, DeviceOrPlaceholder, AVAILABLE_DEVICES } from '../types';
 import { useFloorplan } from '../context/useFloorplan';
+import { createDeviceComponent } from './devices/DeviceFactory';
 
 const FloorplanCanvas: React.FC = () => {
   const {
@@ -104,39 +105,53 @@ const FloorplanCanvas: React.FC = () => {
   };
 
   const handleStageClick = (e: KonvaEventObject<MouseEvent>) => {
-    if (!appState?.currentTypeToPlace) return;
+    // If we clicked on a device, don't handle the click here
+    const target = e.target;
+    if (target.getParent()?.attrs.name === 'device') return;
 
-    const stage = e.target.getStage();
-    if (!stage) return;
+    // If we're placing a new device
+    if (appState?.currentTypeToPlace) {
+      const stage = e.target.getStage();
+      if (!stage) return;
 
-    const pointerPosition = stage.getPointerPosition();
-    if (!pointerPosition) return;
+      const pointerPosition = stage.getPointerPosition();
+      if (!pointerPosition) return;
 
-    // Get the stage scale
-    const scale = stage.scaleX(); // Both scaleX and scaleY should be the same
+      // Get the stage scale
+      const scale = stage.scaleX(); // Both scaleX and scaleY should be the same
 
-    // Calculate the actual position in the stage coordinates
-    const x = (pointerPosition.x - position.x) / scale;
-    const y = (pointerPosition.y - position.y) / scale;
+      // Calculate the actual position in the stage coordinates
+      const x = (pointerPosition.x - position.x) / scale;
+      const y = (pointerPosition.y - position.y) / scale;
 
-    // Create a new placeholder device
-    const newDevice: DeviceOrPlaceholder = {
-      id: `placeholder-${appState.currentTypeToPlace}-${Date.now()}`,
-      type: appState.currentTypeToPlace,
-      name: AVAILABLE_DEVICES.find(d => d.type === appState.currentTypeToPlace)?.name || '',
-      x,
-      y,
-      placeholder: true,
-    };
-
-    // Add the new device to the state
-    setAppState(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        devices: [...prev.devices, newDevice],
+      // Create a new placeholder device
+      const newDevice: DeviceOrPlaceholder = {
+        id: `placeholder-${appState.currentTypeToPlace}-${Date.now()}`,
+        type: appState.currentTypeToPlace,
+        name: AVAILABLE_DEVICES.find(d => d.type === appState.currentTypeToPlace)?.name || '',
+        x,
+        y,
+        placeholder: true,
       };
-    });
+
+      // Add the new device to the state
+      setAppState(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          devices: [...prev.devices, newDevice],
+        };
+      });
+    } else {
+      // If we clicked on empty space and not placing a device, deselect current device
+      setAppState(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          selectedElementId: null,
+        };
+      });
+    }
   };
 
   return (
@@ -204,26 +219,26 @@ const FloorplanCanvas: React.FC = () => {
 
         {/* Devices Layer */}
         <Layer>
-          {appState?.devices.map(device => (
-            <Circle
-              key={device.id}
-              x={device.x}
-              y={device.y}
-              radius={5}
-              fill={device.placeholder ? '#3b82f6' : '#10b981'}
-              stroke={appState.selectedElementId === device.id ? '#1d4ed8' : '#059669'}
-              strokeWidth={2}
-              onClick={() =>
-                setAppState(prev => {
-                  if (!prev) return null;
-                  return {
-                    ...prev,
-                    selectedElementId: device.id,
-                  };
-                })
-              }
-            />
-          ))}
+          {appState?.devices.map(device => {
+            const DeviceComponent = createDeviceComponent(device.type);
+            return (
+              <DeviceComponent
+                key={device.id}
+                device={device}
+                isSelected={appState.selectedElementId === device.id}
+                scale={appState.scaleRatio}
+                onSelect={deviceId => {
+                  setAppState(prev => {
+                    if (!prev) return null;
+                    return {
+                      ...prev,
+                      selectedElementId: deviceId,
+                    };
+                  });
+                }}
+              />
+            );
+          })}
         </Layer>
 
         <Layer>

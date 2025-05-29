@@ -18,13 +18,13 @@ const ViewControls: React.FC = () => {
       <div className="flex items-center gap-1">
         <button
           onClick={() => handleZoom(-0.2)}
-          className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
+          className="cursor-pointer rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow select-none hover:shadow-lg"
         >
           -
         </button>
         <button
           onClick={() => handleZoom(0.2)}
-          className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
+          className="cursor-pointer rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow select-none hover:shadow-lg"
         >
           +
         </button>
@@ -32,14 +32,14 @@ const ViewControls: React.FC = () => {
 
       <button
         onClick={handleGridSizeChange}
-        className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
+        className="cursor-pointer rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow select-none hover:shadow-lg"
       >
         Grid: {GRID_SIZES[uiState.gridSizeIndex]}ft
       </button>
 
       <button
         onClick={() => document.documentElement.requestFullscreen()}
-        className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
+        className="cursor-pointer rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow select-none hover:shadow-lg"
       >
         Fullscreen
       </button>
