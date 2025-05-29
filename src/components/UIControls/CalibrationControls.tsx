@@ -20,19 +20,6 @@ const CalibrationControls: React.FC<Props> = ({
   onImageRotation,
   onCalibrationComplete,
 }) => {
-  const handleScaleRatioChange = (delta: number) => {
-    const currentRatio = state.scaleRatio || 50; // Default to 50px per foot if not set
-    const newRatio = Number((currentRatio * (1 + delta)).toFixed(2));
-
-    // Create a new state object with all existing properties
-    const newState: FloorplanAppState = {
-      ...state,
-      scaleRatio: newRatio,
-    };
-
-    onStateChange(newState);
-  };
-
   const handleComplete = () => {
     // Update app state
     onStateChange({
@@ -81,21 +68,20 @@ const CalibrationControls: React.FC<Props> = ({
         <div className="flex items-center justify-between gap-4">
           <span className="text-sm text-gray-600">Pixels per Foot:</span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleScaleRatioChange(-0.1)}
-              className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
-            >
-              -
-            </button>
-            <span className="text-sm text-gray-800">
-              {(state.scaleRatio || 50).toFixed(2)} px/ft
-            </span>
-            <button
-              onClick={() => handleScaleRatioChange(0.1)}
-              className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
-            >
-              +
-            </button>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={state.scaleRatio || 50}
+              onChange={e => {
+                onStateChange({
+                  ...state,
+                  scaleRatio: parseInt(e.target.value) || 50,
+                });
+              }}
+              className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            />
+            <span className="text-sm text-gray-600">px/ft</span>
           </div>
         </div>
 

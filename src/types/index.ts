@@ -8,6 +8,9 @@ export type DeviceType =
   | 'room_occupancy'
   | 'iaq';
 
+export const GRID_SIZES = [0.5, 1, 2, 5, 10] as const;
+export type GridSize = (typeof GRID_SIZES)[number];
+
 export interface DeviceBase {
   id: string;
   type: DeviceType;
@@ -60,5 +63,5 @@ export interface AppUIState {
   zoomLevel: number; // UI zoom level, resets to 1 on app restart
   imageLocked: boolean;
   isCalibrating: boolean;
-  gridSize: number; // Grid size in feet (0.5, 1, 2, 5, 10)
+  gridSizeIndex: number; // Index into GRID_SIZES array
 }

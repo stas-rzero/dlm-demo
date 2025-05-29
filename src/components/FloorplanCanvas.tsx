@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Stage, Layer, Image as KonvaImage, Line, Text } from 'react-konva';
 import useImage from 'use-image';
 import { Stage as KonvaStage } from 'konva/lib/Stage';
-import { FloorplanAppState, AppUIState } from '../types';
+import { FloorplanAppState, AppUIState, GRID_SIZES } from '../types';
 
 type Props = {
   state: FloorplanAppState;
@@ -21,6 +21,7 @@ const FloorplanCanvas: React.FC<Props> = ({
   onImageRotation,
   onCalibrationComplete,
 }) => {
+  // console.log({ state, uiState });
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<KonvaStage>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -78,9 +79,10 @@ const FloorplanCanvas: React.FC<Props> = ({
     uiState,
   ]);
 
-  // Calculate grid size in pixels based on scale ratio
+  // Calculate grid size in pixels based on scale ratio and grid size
   const getGridSizeInPixels = () => {
-    return state.scaleRatio || 50; // Default to 50 pixels per foot if not set
+    const baseGridSize = state.scaleRatio || 50; // Default to 50 pixels per foot if not set
+    return baseGridSize * GRID_SIZES[uiState.gridSizeIndex];
   };
 
   return (
@@ -151,7 +153,8 @@ const FloorplanCanvas: React.FC<Props> = ({
             x={20}
             y={20}
             text={`Image Scale: ${state.imageScale.toFixed(1)}x
-Grid Scale: ${(state.scaleRatio || 50).toFixed(2)} px/ft
+Grid Scale: ${state.scaleRatio || 50} px/ft
+Grid Size: ${GRID_SIZES[uiState.gridSizeIndex]} ft
 (1 grid square = 1 foot)`}
             fontSize={14}
             fill="black"

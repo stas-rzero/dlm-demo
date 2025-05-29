@@ -26,7 +26,7 @@ const App: React.FC = () => {
     zoomLevel: 1,
     imageLocked: false,
     isCalibrating: false,
-    gridSize: 1, // Default grid size is 1 foot
+    gridSizeIndex: 1, // Default grid size is 1 foot (index 1 in GRID_SIZES array)
   });
 
   // Update right panel visibility when selectedElementId changes

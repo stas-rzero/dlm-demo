@@ -1,5 +1,5 @@
 import React from 'react';
-import { FloorplanAppState, AppUIState } from '../../types';
+import { FloorplanAppState, AppUIState, GRID_SIZES } from '../../types';
 
 type Props = {
   state: FloorplanAppState;
@@ -8,16 +8,12 @@ type Props = {
   onZoom: (delta: number) => void;
 };
 
-const GRID_SIZE_OPTIONS = [0.5, 1, 2, 5, 10] as const;
-type GridSize = (typeof GRID_SIZE_OPTIONS)[number];
-
 const ViewControls: React.FC<Props> = ({ uiState, onUIStateChange, onZoom }) => {
   const handleGridSizeChange = () => {
-    const currentIndex = GRID_SIZE_OPTIONS.indexOf(uiState.gridSize as GridSize);
-    const nextIndex = (currentIndex + 1) % GRID_SIZE_OPTIONS.length;
+    const nextIndex = (uiState.gridSizeIndex + 1) % GRID_SIZES.length;
     onUIStateChange({
       ...uiState,
-      gridSize: GRID_SIZE_OPTIONS[nextIndex],
+      gridSizeIndex: nextIndex,
     });
   };
 
@@ -42,7 +38,7 @@ const ViewControls: React.FC<Props> = ({ uiState, onUIStateChange, onZoom }) => 
         onClick={handleGridSizeChange}
         className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
       >
-        Grid: {uiState.gridSize}ft
+        Grid: {GRID_SIZES[uiState.gridSizeIndex]}ft
       </button>
 
       <button
