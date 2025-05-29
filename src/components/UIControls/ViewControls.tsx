@@ -15,16 +15,19 @@ const ViewControls: React.FC = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1">
+      <div className="flex items-center rounded-md bg-white shadow-md transition-shadow hover:shadow-lg">
         <button
-          onClick={() => handleZoom(-0.2)}
-          className="cursor-pointer rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow select-none hover:shadow-lg"
+          onClick={() => handleZoom(-1)}
+          className="cursor-pointer px-3 py-1.5 text-sm text-gray-800 select-none"
         >
           -
         </button>
+        <p className="min-w-[60px] border-x border-gray-200 text-center text-sm text-gray-600">
+          {Math.round(uiState.zoomLevel * 100)}%
+        </p>
         <button
-          onClick={() => handleZoom(0.2)}
-          className="cursor-pointer rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow select-none hover:shadow-lg"
+          onClick={() => handleZoom(1)}
+          className="cursor-pointer px-3 py-1.5 text-sm text-gray-800 select-none"
         >
           +
         </button>

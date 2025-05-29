@@ -85,7 +85,18 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
   };
 
   const handleZoom = (delta: number) => {
-    const newZoomLevel = Math.min(Math.max(uiState.zoomLevel + delta, 0.5), 2.5);
+    // Convert current zoom level to percentage (1 = 100%)
+    const currentZoomPercent = Math.round(uiState.zoomLevel * 100);
+
+    // Calculate new zoom percentage with 10% steps
+    const newZoomPercent = Math.min(
+      Math.max(currentZoomPercent + delta * 10, 10), // Minimum 10%
+      250 // Maximum 250%
+    );
+
+    // Convert back to decimal (e.g., 100% = 1.0)
+    const newZoomLevel = newZoomPercent / 100;
+
     setUIState(prev => ({
       ...prev,
       zoomLevel: newZoomLevel,
