@@ -1,37 +1,28 @@
 import React from 'react';
-import { FloorplanAppState, AppUIState } from '../../types';
+import { useFloorplan } from '../../context/FloorplanContext';
 
-type Props = {
-  state: FloorplanAppState;
-  uiState: AppUIState;
-  onStateChange: (newState: FloorplanAppState) => void;
-  onUIStateChange: (newState: AppUIState) => void;
-  onImageScale: (delta: number) => void;
-  onImageRotation: (delta: number) => void;
-  onCalibrationComplete: () => void;
-};
+const CalibrationControls: React.FC = () => {
+  const {
+    appState,
+    setAppState,
+    setUIState,
+    handleImageScale,
+    handleImageRotation,
+    handleCalibrationComplete,
+  } = useFloorplan();
 
-const CalibrationControls: React.FC<Props> = ({
-  state,
-  uiState,
-  onStateChange,
-  onUIStateChange,
-  onImageScale,
-  onImageRotation,
-  onCalibrationComplete,
-}) => {
   const handleComplete = () => {
     // Update app state
-    onStateChange({
-      ...state,
+    setAppState(prev => ({
+      ...prev,
       isCalibrating: false,
-    });
+    }));
     // Update UI state
-    onUIStateChange({
-      ...uiState,
+    setUIState(prev => ({
+      ...prev,
       imageLocked: true,
-    });
-    onCalibrationComplete();
+    }));
+    handleCalibrationComplete();
   };
 
   return (
@@ -49,14 +40,14 @@ const CalibrationControls: React.FC<Props> = ({
           <span className="text-sm text-gray-600">Image Size:</span>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onImageScale(-0.1)}
+              onClick={() => handleImageScale(-0.1)}
               className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
             >
               -
             </button>
-            <span className="text-sm text-gray-800">{state.imageScale.toFixed(1)}x</span>
+            <span className="text-sm text-gray-800">{appState.imageScale.toFixed(1)}x</span>
             <button
-              onClick={() => onImageScale(0.1)}
+              onClick={() => handleImageScale(0.1)}
               className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
             >
               +
@@ -72,12 +63,12 @@ const CalibrationControls: React.FC<Props> = ({
               type="number"
               min="1"
               max="100"
-              value={state.scaleRatio || 50}
+              value={appState.scaleRatio || 50}
               onChange={e => {
-                onStateChange({
-                  ...state,
+                setAppState(prev => ({
+                  ...prev,
                   scaleRatio: parseInt(e.target.value) || 50,
-                });
+                }));
               }}
               className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
@@ -90,14 +81,14 @@ const CalibrationControls: React.FC<Props> = ({
           <span className="text-sm text-gray-600">Rotation:</span>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onImageRotation(-90)}
+              onClick={() => handleImageRotation(-90)}
               className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
             >
               ↺
             </button>
-            <span className="text-sm text-gray-800">{state.imageRotation}°</span>
+            <span className="text-sm text-gray-800">{appState.imageRotation}°</span>
             <button
-              onClick={() => onImageRotation(90)}
+              onClick={() => handleImageRotation(90)}
               className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-800 shadow-sm transition-colors hover:bg-gray-200"
             >
               ↻

@@ -1,40 +1,23 @@
 import React from 'react';
-import { FloorplanAppState, DeviceOrPlaceholder } from '../../types';
+import { useFloorplan } from '../../context/FloorplanContext';
 
-type Props = {
-  state: FloorplanAppState;
-  onStateChange: (newState: FloorplanAppState) => void;
-};
-
-const LeftPanel: React.FC<Props> = ({ state }) => {
-  const [searchQuery, setSearchQuery] = React.useState('');
-
-  const filteredDevices = state.devices.filter(device => 
-    device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (device.type === 'hub' && 'label' in device && device.label.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+const LeftPanel: React.FC = () => {
+  const { appState, setAppState } = useFloorplan();
 
   return (
-    <div className="w-64 h-full bg-white shadow-sm rounded-md p-4 flex flex-col">
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search devices..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md text-sm"
-        />
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {filteredDevices.map((device) => (
+    <div className="h-full w-64 rounded-md bg-white p-4 shadow-sm">
+      <h3 className="mb-4 text-lg font-medium">Devices</h3>
+      <div className="space-y-2">
+        {appState.devices.map(device => (
           <div
             key={device.id}
-            className="p-2 mb-2 border rounded-md hover:bg-gray-50 cursor-pointer"
+            className={`cursor-pointer rounded p-2 ${
+              appState.selectedElementId === device.id ? 'bg-blue-100' : 'hover:bg-gray-100'
+            }`}
+            onClick={() => setAppState(prev => ({ ...prev, selectedElementId: device.id }))}
           >
             <div className="font-medium">{device.name}</div>
-            {!device.placeholder && 'label' in device && (
-              <div className="text-sm text-gray-500">{device.label}</div>
-            )}
+            <div className="text-sm text-gray-500">{device.type}</div>
           </div>
         ))}
       </div>
@@ -42,4 +25,4 @@ const LeftPanel: React.FC<Props> = ({ state }) => {
   );
 };
 
-export default LeftPanel; 
+export default LeftPanel;

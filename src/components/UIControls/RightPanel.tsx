@@ -1,25 +1,21 @@
 import React from 'react';
-import { FloorplanAppState, DeviceOrPlaceholder } from '../../types';
+import { useFloorplan } from '../../context/FloorplanContext';
 
-type Props = {
-  state: FloorplanAppState;
-  onStateChange: (newState: FloorplanAppState) => void;
-};
-
-const RightPanel: React.FC<Props> = ({ state }) => {
-  const selectedDevice = state.devices.find(device => device.id === state.selectedElementId);
+const RightPanel: React.FC = () => {
+  const { appState } = useFloorplan();
+  const selectedDevice = appState.devices.find(device => device.id === appState.selectedElementId);
 
   if (!selectedDevice) {
     return (
-      <div className="w-64 h-full bg-white shadow-sm rounded-md p-4">
-        <div className="text-gray-500 text-center">No device selected</div>
+      <div className="h-full w-64 rounded-md bg-white p-4 shadow-sm">
+        <div className="text-center text-gray-500">No device selected</div>
       </div>
     );
   }
 
   return (
-    <div className="w-64 h-full bg-white shadow-sm rounded-md p-4">
-      <h3 className="text-lg font-medium mb-4">{selectedDevice.name}</h3>
+    <div className="h-full w-64 rounded-md bg-white p-4 shadow-sm">
+      <h3 className="mb-4 text-lg font-medium">{selectedDevice.name}</h3>
       <div className="space-y-2">
         <div>
           <span className="text-gray-500">Type:</span>
@@ -56,4 +52,4 @@ const RightPanel: React.FC<Props> = ({ state }) => {
   );
 };
 
-export default RightPanel; 
+export default RightPanel;

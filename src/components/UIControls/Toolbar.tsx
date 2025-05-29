@@ -1,73 +1,59 @@
 import React from 'react';
-import { FloorplanAppState, AppUIState } from '../../types';
+import { useFloorplan } from '../../context/FloorplanContext';
 
-type Props = {
-  state: FloorplanAppState;
-  onStateChange: (newState: FloorplanAppState) => void;
-  onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onImageResize: (delta: number) => void;
-  onLockImage: () => void;
-  onCalibrate: () => void;
-  imageLocked: boolean;
-  uiState: AppUIState;
-  onUIStateChange: (newState: AppUIState) => void;
-};
+const Toolbar: React.FC = () => {
+  const { uiState, setUIState, handleImageScale, handleImageUpload } = useFloorplan();
 
-const Toolbar: React.FC<Props> = ({
-  state,
-  onStateChange,
-  onImageUpload,
-  onImageResize,
-  onLockImage,
-  onCalibrate,
-  imageLocked,
-  uiState,
-  onUIStateChange,
-}) => {
   const toggleLeftPanel = () => {
-    onUIStateChange({
-      ...uiState,
-      showLeftPanel: !uiState.showLeftPanel,
-    });
+    setUIState(prev => ({
+      ...prev,
+      showLeftPanel: !prev.showLeftPanel,
+    }));
+  };
+
+  const handleFileInputUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    handleImageUpload(file);
   };
 
   return (
-    <div className="flex flex-wrap gap-2 items-center">
+    <div className="flex flex-wrap items-center gap-2">
       <button
         onClick={toggleLeftPanel}
-        className={`px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow text-sm ${
+        className={`rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg ${
           uiState.showLeftPanel ? 'bg-gray-100' : ''
         }`}
       >
         Devices
       </button>
-      <input type="file" accept="image/*" onChange={onImageUpload} className="text-sm" />
-      {!imageLocked && (
+      <input type="file" accept="image/*" onChange={handleFileInputUpload} className="text-sm" />
+      {!uiState.imageLocked && (
         <>
-          <button 
-            onClick={() => onImageResize(0.2)} 
-            className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow text-sm"
+          <button
+            onClick={() => handleImageScale(0.2)}
+            className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
           >
             Image +
           </button>
-          <button 
-            onClick={() => onImageResize(-0.2)} 
-            className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow text-sm"
+          <button
+            onClick={() => handleImageScale(-0.2)}
+            className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
           >
             Image -
           </button>
-          <button 
-            onClick={onLockImage} 
-            className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow text-sm"
+          <button
+            onClick={() => setUIState(prev => ({ ...prev, imageLocked: true }))}
+            className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
           >
             Fix Image Size
           </button>
         </>
       )}
-      {imageLocked && (
-        <button 
-          onClick={onCalibrate} 
-          className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-md hover:shadow-lg transition-shadow text-sm"
+      {uiState.imageLocked && (
+        <button
+          onClick={() => setUIState(prev => ({ ...prev, isCalibrating: true }))}
+          className="rounded-md bg-white px-3 py-1.5 text-sm text-gray-800 shadow-md transition-shadow hover:shadow-lg"
         >
           Calibrate
         </button>
@@ -76,4 +62,4 @@ const Toolbar: React.FC<Props> = ({
   );
 };
 
-export default Toolbar; 
+export default Toolbar;

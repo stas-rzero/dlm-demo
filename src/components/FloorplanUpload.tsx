@@ -1,18 +1,17 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useFloorplan } from '../context/FloorplanContext';
 
-interface Props {
-  onImageUpload: (file: File) => void;
-}
+const FloorplanUpload: React.FC = () => {
+  const { handleImageUpload } = useFloorplan();
 
-const FloorplanUpload: React.FC<Props> = ({ onImageUpload }) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
-        onImageUpload(acceptedFiles[0]);
+        handleImageUpload(acceptedFiles[0]);
       }
     },
-    [onImageUpload]
+    [handleImageUpload]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
