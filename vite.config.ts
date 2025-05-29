@@ -12,5 +12,6 @@ export default defineConfig({
     assetsDir: 'assets',
     emptyOutDir: true,
     sourcemap: true
-  }
+  },
+  publicDir: 'src/assets'
 })

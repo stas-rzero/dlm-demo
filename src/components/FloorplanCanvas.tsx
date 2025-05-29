@@ -1,59 +1,59 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Stage, Layer, Image as KonvaImage, Line, Circle, Text, Grid } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Line, Circle, Text } from "react-konva";
 import useImage from "use-image";
+import { Stage as KonvaStage } from "konva/lib/Stage";
+import { FloorplanAppState } from "../types";
 
 type Props = {
-  width?: number;
-  height?: number;
+  state: FloorplanAppState;
+  onStateChange: (newState: FloorplanAppState) => void;
+  imageScale: number;
+  setImageScale: (scale: number) => void;
+  imageLocked: boolean;
+  setImageLocked: (locked: boolean) => void;
+  isCalibrating: boolean;
+  setIsCalibrating: (calibrating: boolean) => void;
 };
 
-const FloorplanCanvas: React.FC<Props> = ({ width = 1024, height = 768 }) => {
-  const stageRef = useRef<any>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+const FloorplanCanvas: React.FC<Props> = ({
+  state,
+  onStateChange,
+  imageScale,
+  setImageScale,
+  imageLocked,
+  setImageLocked,
+  isCalibrating,
+  setIsCalibrating,
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<KonvaStage>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [imageScale, setImageScale] = useState(1);
-  const [imageLocked, setImageLocked] = useState(false);
-
-  const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationPoints, setCalibrationPoints] = useState<[number, number][]>([]);
-  const [scaleRatio, setScaleRatio] = useState<number | null>(null);
 
-  const [floorplanImage] = useImage(imageUrl || "");
+  const [floorplanImage] = useImage(state.floorplanImageUrl || "");
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImageUrl(reader.result as string);
-      setImageScale(1);
-      setImageLocked(false);
-      setCalibrationPoints([]);
-      setScaleRatio(null);
+  // Handle container resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ width, height });
+      }
     };
-    reader.readAsDataURL(file);
-  };
 
-  const handleZoom = (delta: number) => {
-    const newScale = Math.min(Math.max(scale + delta, 0.5), 2.5);
-    setScale(newScale);
-  };
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
-  const handleImageResize = (delta: number) => {
-    if (imageLocked) return;
-    const newImageScale = Math.min(Math.max(imageScale + delta, 0.1), 3);
-    setImageScale(newImageScale);
-  };
-
-  const handleLockImage = () => {
-    setImageLocked(true);
-  };
-
-  const handleStageClick = (e: any) => {
+  const handleStageClick = () => {
     if (!isCalibrating) return;
 
     const stage = stageRef.current;
+    if (!stage) return;
+    
     const pointerPos = stage.getPointerPosition();
     if (!pointerPos) return;
 
@@ -67,8 +67,10 @@ const FloorplanCanvas: React.FC<Props> = ({ width = 1024, height = 768 }) => {
       const feet = parseFloat(prompt(`Pixel distance: ${pixelDist.toFixed(1)}. Enter distance in feet:`) || "");
       if (!isNaN(feet) && feet > 0) {
         const newScaleRatio = feet / pixelDist;
-        setScaleRatio(newScaleRatio);
-        console.log("Calibration scaleRatio:", newScaleRatio);
+        onStateChange({
+          ...state,
+          scaleRatio: newScaleRatio,
+        });
       }
 
       setCalibrationPoints([]);
@@ -88,30 +90,14 @@ const FloorplanCanvas: React.FC<Props> = ({ width = 1024, height = 768 }) => {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [setIsCalibrating]);
 
   return (
-    <div className="relative">
-      <div className="mb-2 flex flex-wrap gap-2 items-center">
-        <input type="file" accept="image/*" onChange={handleFileUpload} className="text-sm" />
-        <button onClick={() => handleZoom(0.2)} className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-sm hover:shadow transition-shadow text-sm">+</button>
-        <button onClick={() => handleZoom(-0.2)} className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-sm hover:shadow transition-shadow text-sm">-</button>
-        {!imageLocked && (
-          <>
-            <button onClick={() => handleImageResize(0.2)} className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-sm hover:shadow transition-shadow text-sm">Image +</button>
-            <button onClick={() => handleImageResize(-0.2)} className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-sm hover:shadow transition-shadow text-sm">Image -</button>
-            <button onClick={handleLockImage} className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-sm hover:shadow transition-shadow text-sm">Fix Image Size</button>
-          </>
-        )}
-        {imageLocked && (
-          <button onClick={() => setIsCalibrating(true)} className="px-3 py-1.5 bg-white text-gray-800 rounded-md shadow-sm hover:shadow transition-shadow text-sm">Calibrate</button>
-        )}
-      </div>
-
+    <div ref={containerRef} className="w-full h-full">
       <Stage
         ref={stageRef}
-        width={width}
-        height={height}
+        width={dimensions.width}
+        height={dimensions.height}
         scaleX={scale}
         scaleY={scale}
         x={position.x}
@@ -119,7 +105,7 @@ const FloorplanCanvas: React.FC<Props> = ({ width = 1024, height = 768 }) => {
         draggable
         onDragMove={(e) => setPosition(e.target.position())}
         onClick={handleStageClick}
-        className="border shadow bg-white"
+        className="bg-white"
       >
         <Layer>
           {floorplanImage && (
@@ -128,20 +114,20 @@ const FloorplanCanvas: React.FC<Props> = ({ width = 1024, height = 768 }) => {
         </Layer>
         <Layer>
           {/* Vertical lines */}
-          {Array.from({ length: Math.ceil((width * 2) / 50) }).map((_, i) => (
+          {Array.from({ length: Math.ceil((dimensions.width * 2) / 50) }).map((_, i) => (
             <Line
               key={`v-${i}`}
-              points={[i * 50 - width/2, -height/2, i * 50 - width/2, height * 1.5]}
+              points={[i * 50 - dimensions.width/2, -dimensions.height/2, i * 50 - dimensions.width/2, dimensions.height * 1.5]}
               stroke="#ddd"
               strokeWidth={1}
               dash={[5, 5]}
             />
           ))}
           {/* Horizontal lines */}
-          {Array.from({ length: Math.ceil((height * 2) / 50) }).map((_, i) => (
+          {Array.from({ length: Math.ceil((dimensions.height * 2) / 50) }).map((_, i) => (
             <Line
               key={`h-${i}`}
-              points={[-width/2, i * 50 - height/2, width * 1.5, i * 50 - height/2]}
+              points={[-dimensions.width/2, i * 50 - dimensions.height/2, dimensions.width * 1.5, i * 50 - dimensions.height/2]}
               stroke="#ddd"
               strokeWidth={1}
               dash={[5, 5]}
