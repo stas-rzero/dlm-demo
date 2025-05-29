@@ -19,7 +19,6 @@ const INITIAL_APP_STATE: FloorplanAppState = {
   currentTypeToPlace: null,
   currentUnassignedDeviceIdToPlace: null,
   isMeasuring: false,
-  isCalibrating: false,
 };
 
 const LoadingOverlay: React.FC = () => (

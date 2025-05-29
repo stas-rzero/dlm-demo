@@ -12,18 +12,10 @@ const CalibrationControls: React.FC = () => {
   } = useFloorplan();
 
   const handleComplete = () => {
-    // Update app state
-    setAppState(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        isCalibrating: false,
-      };
-    });
     // Update UI state
     setUIState(prev => ({
       ...prev,
-      imageLocked: true,
+      isCalibrating: false,
     }));
     handleCalibrationComplete();
   };

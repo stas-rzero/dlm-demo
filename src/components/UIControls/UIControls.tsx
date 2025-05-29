@@ -7,11 +7,11 @@ import CalibrationControls from './CalibrationControls';
 import { useFloorplan } from '../../context/useFloorplan';
 
 const UIControls: React.FC = () => {
-  const { appState, uiState } = useFloorplan();
+  const { uiState } = useFloorplan();
 
   return (
     <>
-      {appState.isCalibrating ? (
+      {uiState.isCalibrating ? (
         <CalibrationControls />
       ) : (
         <>

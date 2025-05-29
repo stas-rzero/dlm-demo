@@ -40,7 +40,7 @@ const FloorplanCanvas: React.FC = () => {
   // Handle keyboard shortcuts for calibration
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!appState?.isCalibrating) return;
+      if (!uiState.isCalibrating) return;
 
       switch (e.key) {
         case '+':
@@ -65,7 +65,7 @@ const FloorplanCanvas: React.FC = () => {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [
-    appState?.isCalibrating,
+    uiState.isCalibrating,
     handleImageScale,
     handleImageRotation,
     handleCalibrationComplete,
@@ -155,21 +155,28 @@ const FloorplanCanvas: React.FC = () => {
         </Layer>
 
         <Layer>
-          <Text
-            x={20}
-            y={20}
-            text={`Image Scale: ${appState?.imageScale?.toFixed(1)}x
+          {floorplanImage && (
+            <Text
+              x={dimensions.width / 2 - (floorplanImage.width * (appState?.imageScale || 1)) / 2}
+              y={
+                dimensions.height / 2 -
+                (floorplanImage.height * (appState?.imageScale || 1)) / 2 -
+                100
+              }
+              text={`Image Size: ${appState?.imageScale?.toFixed(1)}x
 Grid Scale: ${appState?.scaleRatio || 50} px/ft
 Grid Size: ${GRID_SIZES[uiState.gridSizeIndex]} ft
+Zoom: ${(uiState.zoomLevel * 100).toFixed(0)}%
 (1 grid square = 1 foot)`}
-            fontSize={14}
-            fill="black"
-            padding={10}
-            background="#ffffff80"
-            listening={false}
-            perfectDrawEnabled={false}
-            transformsEnabled="position"
-          />
+              fontSize={14}
+              fill="black"
+              padding={10}
+              background="#ffffff80"
+              listening={false}
+              perfectDrawEnabled={false}
+              transformsEnabled="position"
+            />
+          )}
         </Layer>
       </Stage>
     </div>

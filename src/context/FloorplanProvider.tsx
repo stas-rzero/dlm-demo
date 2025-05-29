@@ -13,7 +13,6 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
     showLeftPanel: false,
     showRightPanel: false,
     zoomLevel: 1,
-    imageLocked: false,
     isCalibrating: false,
     gridSizeIndex: 1,
   });
@@ -43,20 +42,19 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
           imageScale: 1,
           imageRotation: 0,
           scaleRatio: 50,
-          isCalibrating: true,
         };
       });
       setUIState(prev => ({
         ...prev,
         zoomLevel: 1,
-        imageLocked: false,
+        isCalibrating: true,
       }));
     };
     reader.readAsDataURL(file);
   };
 
   const handleImageScale = (delta: number) => {
-    if (!appState || uiState.imageLocked) return;
+    if (!appState) return;
     const newImageScale = Math.min(Math.max(appState.imageScale + delta, 0.1), 3);
     setAppState(prev => {
       if (!prev) return null;
@@ -80,16 +78,9 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
   };
 
   const handleCalibrationComplete = () => {
-    setAppState(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        isCalibrating: false,
-      };
-    });
     setUIState(prev => ({
       ...prev,
-      imageLocked: true,
+      isCalibrating: false,
     }));
   };
 

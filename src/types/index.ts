@@ -50,7 +50,6 @@ export interface FloorplanAppState {
   currentTypeToPlace: DeviceType | null;
   currentUnassignedDeviceIdToPlace: string | null;
   isMeasuring: boolean;
-  isCalibrating: boolean;
   editSnapshot?: {
     devices: DeviceOrPlaceholder[];
     unassignedDevices: Device[];
@@ -61,7 +60,6 @@ export interface AppUIState {
   showLeftPanel: boolean;
   showRightPanel: boolean;
   zoomLevel: number; // UI zoom level, resets to 1 on app restart
-  imageLocked: boolean;
   isCalibrating: boolean;
   gridSizeIndex: number; // Index into GRID_SIZES array
 }
