@@ -2,8 +2,21 @@ import React from 'react';
 import { useFloorplan } from '../../context/useFloorplan';
 
 const RightPanel: React.FC = () => {
-  const { appState } = useFloorplan();
-  const selectedDevice = appState.devices.find(device => device.id === appState.selectedElementId);
+  const { appState, setAppState } = useFloorplan();
+  const selectedDevice = appState?.devices.find(device => device.id === appState.selectedElementId);
+
+  const handleDelete = () => {
+    if (!selectedDevice) return;
+
+    setAppState(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        devices: prev.devices.filter(device => device.id !== selectedDevice.id),
+        selectedElementId: null,
+      };
+    });
+  };
 
   if (!selectedDevice) {
     return (
@@ -48,6 +61,16 @@ const RightPanel: React.FC = () => {
           </>
         )}
       </div>
+      {(appState?.mode === 'planning' || appState?.mode === 'edit') && (
+        <div className="mt-4 border-t border-gray-200 pt-4">
+          <button
+            onClick={handleDelete}
+            className="w-full cursor-pointer rounded-md border border-red-500 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
+          >
+            Delete Device
+          </button>
+        </div>
+      )}
     </div>
   );
 };
