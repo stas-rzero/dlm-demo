@@ -17,6 +17,32 @@ const FloorplanApp: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [containerSize, setContainerSize] = useState({ width: 1280, height: 800 });
+
+  useEffect(() => {
+    const updateContainerSize = () => {
+      const maxWidth = 1280;
+      const maxHeight = 800;
+      const padding = 24; // 12px on each side
+
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      const newWidth = Math.min(maxWidth, windowWidth - padding);
+      const newHeight = Math.min(maxHeight, windowHeight - padding);
+
+      setContainerSize({ width: newWidth, height: newHeight });
+    };
+
+    // Initial size calculation
+    updateContainerSize();
+
+    // Add resize listener
+    window.addEventListener('resize', updateContainerSize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', updateContainerSize);
+  }, []);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -53,7 +79,13 @@ const FloorplanApp: React.FC = () => {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
-      <div className="h-[800px] w-[1280px] overflow-hidden rounded-lg border border-gray-300 bg-white">
+      <div
+        style={{
+          width: `${containerSize.width}px`,
+          height: `${containerSize.height}px`,
+        }}
+        className="overflow-hidden rounded-lg border border-gray-300 bg-white"
+      >
         <div className="relative h-full w-full">
           {!appState?.floorplanImageUrl ? (
             <FloorplanUpload />

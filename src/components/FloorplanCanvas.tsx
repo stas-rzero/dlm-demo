@@ -34,6 +34,21 @@ const FloorplanCanvas: React.FC = () => {
   const imageUrl = useMemo(() => appState?.floorplanImageUrl || '', [appState?.floorplanImageUrl]);
   const [floorplanImage, status] = useStableImage(imageUrl);
 
+  // Calculate the image's actual dimensions and position
+  const imageDimensions = useMemo(() => {
+    if (!floorplanImage) return { width: 0, height: 0, x: 0, y: 0 };
+
+    const scale = appState?.imageScale || 1;
+    const width = floorplanImage.width * scale;
+    const height = floorplanImage.height * scale;
+
+    // Calculate the image's position to keep it centered
+    const x = (dimensions.width - width) / 2;
+    const y = (dimensions.height - height) / 2;
+
+    return { width, height, x, y };
+  }, [floorplanImage, dimensions, appState?.imageScale]);
+
   // Handle container resize
   useEffect(() => {
     const updateDimensions = () => {
@@ -127,30 +142,38 @@ const FloorplanCanvas: React.FC = () => {
       if (!pointerPosition) return;
 
       // Get the stage scale
-      const scale = stage.scaleX(); // Both scaleX and scaleY should be the same
+      const stageScale = stage.scaleX(); // Both scaleX and scaleY should be the same
 
-      // Calculate the actual position in the stage coordinates
-      const x = (pointerPosition.x - position.x) / scale;
-      const y = (pointerPosition.y - position.y) / scale;
+      // Calculate position relative to the image, accounting for stage scale and position
+      const imageX = (pointerPosition.x - position.x) / stageScale - imageDimensions.x;
+      const imageY = (pointerPosition.y - position.y) / stageScale - imageDimensions.y;
 
-      // Create a new placeholder device
-      const newDevice: DeviceOrPlaceholder = {
-        id: `placeholder-${appState.currentTypeToPlace}-${Date.now()}`,
-        type: appState.currentTypeToPlace,
-        name: AVAILABLE_DEVICES.find(d => d.type === appState.currentTypeToPlace)?.name || '',
-        x,
-        y,
-        placeholder: true,
-      };
-
-      // Add the new device to the state
-      setAppState(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          devices: [...prev.devices, newDevice],
+      // Only place device if click is within image bounds
+      if (
+        imageX >= 0 &&
+        imageX <= imageDimensions.width &&
+        imageY >= 0 &&
+        imageY <= imageDimensions.height
+      ) {
+        // Create a new placeholder device
+        const newDevice: DeviceOrPlaceholder = {
+          id: `placeholder-${appState.currentTypeToPlace}-${Date.now()}`,
+          type: appState.currentTypeToPlace,
+          name: AVAILABLE_DEVICES.find(d => d.type === appState.currentTypeToPlace)?.name || '',
+          x: imageX,
+          y: imageY,
+          placeholder: true,
         };
-      });
+
+        // Add the new device to the state
+        setAppState(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            devices: [...prev.devices, newDevice],
+          };
+        });
+      }
     } else {
       // If we clicked on empty space and not placing a device, deselect current device
       setAppState(prev => {
@@ -241,10 +264,8 @@ const FloorplanCanvas: React.FC = () => {
               image={floorplanImage}
               scale={{ x: appState?.imageScale || 1, y: appState?.imageScale || 1 }}
               rotation={appState?.imageRotation || 0}
-              x={dimensions.width / 2}
-              y={dimensions.height / 2}
-              offsetX={floorplanImage.width / 2}
-              offsetY={floorplanImage.height / 2}
+              x={imageDimensions.x}
+              y={imageDimensions.y}
             />
           )}
         </Layer>
@@ -254,25 +275,35 @@ const FloorplanCanvas: React.FC = () => {
             const gridSize = getGridSizeInPixels();
             const { width, height } = getGridDimensions();
 
+            // Calculate the number of grid lines needed
+            const numVerticalLines = Math.ceil(width / gridSize);
+            const numHorizontalLines = Math.ceil(height / gridSize);
+
+            // Calculate the starting positions to center the grid
+            const startX = imageDimensions.x - (width - imageDimensions.width) / 2;
+            const startY = imageDimensions.y - (height - imageDimensions.height) / 2;
+
             return (
               <>
-                {Array.from({ length: Math.ceil(width / gridSize) }).map((_, i) => (
+                {/* Vertical lines */}
+                {Array.from({ length: numVerticalLines }).map((_, i) => (
                   <Line
                     key={`v-${i}`}
-                    points={[i * gridSize, -height / 2, i * gridSize, height / 2]}
-                    x={dimensions.width / 2 - width / 2}
-                    y={dimensions.height / 2}
+                    points={[0, 0, 0, height]}
+                    x={startX + i * gridSize}
+                    y={startY}
                     stroke="#ddd"
                     strokeWidth={1}
                     dash={[5, 5]}
                   />
                 ))}
-                {Array.from({ length: Math.ceil(height / gridSize) }).map((_, i) => (
+                {/* Horizontal lines */}
+                {Array.from({ length: numHorizontalLines }).map((_, i) => (
                   <Line
                     key={`h-${i}`}
-                    points={[-width / 2, i * gridSize, width / 2, i * gridSize]}
-                    x={dimensions.width / 2}
-                    y={dimensions.height / 2 - height / 2}
+                    points={[0, 0, width, 0]}
+                    x={startX}
+                    y={startY + i * gridSize}
                     stroke="#ddd"
                     strokeWidth={1}
                     dash={[5, 5]}
@@ -290,7 +321,11 @@ const FloorplanCanvas: React.FC = () => {
             return (
               <DeviceComponent
                 key={device.id}
-                device={device}
+                device={{
+                  ...device,
+                  x: device.x + imageDimensions.x,
+                  y: device.y + imageDimensions.y,
+                }}
                 isSelected={appState.selectedElementId === device.id}
                 scale={appState.scaleRatio}
                 onSelect={deviceId => {
@@ -310,12 +345,8 @@ const FloorplanCanvas: React.FC = () => {
         <Layer>
           {floorplanImage && (
             <Text
-              x={dimensions.width / 2 - (floorplanImage.width * (appState?.imageScale || 1)) / 2}
-              y={
-                dimensions.height / 2 -
-                (floorplanImage.height * (appState?.imageScale || 1)) / 2 -
-                100
-              }
+              x={imageDimensions.x}
+              y={imageDimensions.y - 100}
               text={`Image Size: ${appState?.imageScale?.toFixed(1)}x
 Grid Scale: ${appState?.scaleRatio || 50} px/ft
 Grid Size: ${GRID_SIZES[uiState.gridSizeIndex]} ft
