@@ -54,7 +54,13 @@ const FloorplanCanvas: React.FC = () => {
     const updateDimensions = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setDimensions({ width, height });
+        // Ensure we're using the full viewport size
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        setDimensions({
+          width: Math.max(width, viewportWidth),
+          height: Math.max(height, viewportHeight),
+        });
       }
     };
 
@@ -367,7 +373,7 @@ Zoom: ${(uiState.zoomLevel * 100).toFixed(0)}%`}
   };
 
   return (
-    <div ref={containerRef} className="h-full w-full overflow-hidden">
+    <div ref={containerRef} className="absolute inset-0 h-full w-full overflow-hidden">
       {renderContent()}
     </div>
   );

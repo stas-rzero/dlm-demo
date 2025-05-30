@@ -13,14 +13,14 @@ export class HubDevice extends BaseDevice {
     const { x, y } = device;
 
     // Convert feet to pixels using the scale
-    const range100ft = 100 * scale;
+    const range50ft = 50 * scale;
 
     return (
       <>
         {super.render()}
         {/* Range circles */}
         <Circle
-          radius={range100ft}
+          radius={range50ft}
           fill="transparent"
           stroke={DEVICE_COLORS.hub.fill}
           strokeWidth={1.5}

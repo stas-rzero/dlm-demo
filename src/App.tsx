@@ -53,7 +53,7 @@ const FloorplanApp: React.FC = () => {
 
   return (
     <div
-      className={`flex h-screen w-screen items-center justify-center bg-gray-100 ${
+      className={`fixed inset-0 flex items-center justify-center bg-gray-100 ${
         uiState.isFullscreen ? 'p-0' : 'p-6'
       }`}
     >
