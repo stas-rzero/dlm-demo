@@ -1,25 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import FloorplanCanvas from './components/FloorplanCanvas';
 import FloorplanUpload from './components/FloorplanUpload';
 import UIControls from './components/UIControls';
 import { FloorplanProvider } from './context/FloorplanProvider';
 import { useFloorplan } from './context/useFloorplan';
-import { planningMockState } from './utils/mockData';
-import { FloorplanAppState } from './types';
+import { getFloorplanById, INITIAL_APP_STATE } from './utils/mockData';
 
-const INITIAL_APP_STATE: FloorplanAppState = {
-  mode: 'planning',
-  floorplanImageUrl: null,
-  imageScale: 1,
-  imageRotation: 0,
-  scaleRatio: 50,
-  devices: [],
-  unassignedDevices: [],
-  selectedElementId: null,
-  currentTypeToPlace: null,
-  currentUnassignedDeviceIdToPlace: null,
-  isMeasuring: false,
-};
+interface AppProps {
+  baseUrl: string;
+}
 
 const LoadingOverlay: React.FC = () => (
   <div className="bg-opacity-75 fixed inset-0 z-50 flex items-center justify-center bg-white">
@@ -30,6 +20,8 @@ const LoadingOverlay: React.FC = () => (
 const FloorplanApp: React.FC = () => {
   const { appState, setAppState } = useFloorplan();
   const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -37,9 +29,18 @@ const FloorplanApp: React.FC = () => {
         // Simulate API call to fetch data
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // In a real app, you would check if there's existing data
-        // For now, we'll use the mock data
-        setAppState(planningMockState);
+        if (id) {
+          const floorplanData = getFloorplanById(id);
+          if (floorplanData) {
+            setAppState(floorplanData);
+          } else {
+            // If floorplan not found, redirect to root
+            navigate('/');
+          }
+        } else {
+          // If no ID provided, initialize with empty state
+          setAppState(INITIAL_APP_STATE);
+        }
       } catch (error) {
         console.error('Failed to load data:', error);
         setAppState(INITIAL_APP_STATE);
@@ -73,11 +74,16 @@ const FloorplanApp: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+const App: React.FC<AppProps> = ({ baseUrl }) => {
   return (
-    <FloorplanProvider>
-      <FloorplanApp />
-    </FloorplanProvider>
+    <BrowserRouter basename={baseUrl}>
+      <FloorplanProvider>
+        <Routes>
+          <Route path="/" element={<FloorplanApp />} />
+          <Route path="/:id" element={<FloorplanApp />} />
+        </Routes>
+      </FloorplanProvider>
+    </BrowserRouter>
   );
 };
 
