@@ -6,22 +6,17 @@ import UIControls from './components/UIControls';
 import { FloorplanProvider } from './context/FloorplanProvider';
 import { useFloorplan } from './context/useFloorplan';
 import { getFloorplanById, INITIAL_APP_STATE } from './utils/mockData';
+import LoadingOverlay from './components/LoadingOverlay';
 
 interface AppProps {
   baseUrl: string;
 }
 
-const LoadingOverlay: React.FC = () => (
-  <div className="bg-opacity-75 fixed inset-0 z-50 flex items-center justify-center bg-white">
-    <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
-  </div>
-);
-
 const FloorplanApp: React.FC = () => {
   const { appState, setAppState } = useFloorplan();
-  const [isLoading, setIsLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -50,10 +45,10 @@ const FloorplanApp: React.FC = () => {
     };
 
     initializeApp();
-  }, []);
+  }, [id, navigate, setAppState]);
 
   if (isLoading) {
-    return <LoadingOverlay />;
+    return <LoadingOverlay fullScreen message="Loading application..." />;
   }
 
   return (

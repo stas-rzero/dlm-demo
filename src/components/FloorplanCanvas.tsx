@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Stage, Layer, Image as KonvaImage, Line, Text } from 'react-konva';
 import useImage from 'use-image';
 import { Stage as KonvaStage } from 'konva/lib/Stage';
@@ -6,6 +6,13 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import { GRID_SIZES, DeviceOrPlaceholder, AVAILABLE_DEVICES } from '../types';
 import { useFloorplan } from '../context/useFloorplan';
 import { createDeviceComponent } from './devices/DeviceFactory';
+import LoadingOverlay from './LoadingOverlay';
+
+// Custom hook for stable image loading
+const useStableImage = (url: string) => {
+  const [image, status] = useImage(url, 'anonymous');
+  return [image, status] as const;
+};
 
 const FloorplanCanvas: React.FC = () => {
   const {
@@ -23,7 +30,9 @@ const FloorplanCanvas: React.FC = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  const [floorplanImage] = useImage(appState?.floorplanImageUrl || '');
+  // Memoize the image URL
+  const imageUrl = useMemo(() => appState?.floorplanImageUrl || '', [appState?.floorplanImageUrl]);
+  const [floorplanImage, status] = useStableImage(imageUrl);
 
   // Handle container resize
   useEffect(() => {
@@ -154,8 +163,65 @@ const FloorplanCanvas: React.FC = () => {
     }
   };
 
-  return (
-    <div ref={containerRef} className="h-full w-full">
+  const renderContent = () => {
+    // If there's no image URL, show the empty state
+    if (!imageUrl) {
+      return (
+        <div className="flex h-full w-full items-center justify-center">
+          <div className="flex flex-col items-center">
+            <svg
+              className="mb-4 h-12 w-12 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <p className="text-lg font-medium text-gray-600">No floorplan loaded</p>
+            <p className="mt-2 text-sm text-gray-500">Please upload a floorplan image</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (status === 'loading') {
+      return <LoadingOverlay message="Loading floorplan..." />;
+    }
+
+    if (status === 'failed') {
+      return (
+        <div className="flex h-full w-full items-center justify-center">
+          <div className="flex flex-col items-center">
+            <svg
+              className="mb-4 h-12 w-12 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p className="text-lg font-medium text-red-600">Failed to load floorplan</p>
+            <p className="mt-2 text-sm text-gray-500">
+              Something went wrong, please try to reload the page.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
       <Stage
         ref={stageRef}
         width={dimensions.width}
@@ -253,8 +319,7 @@ const FloorplanCanvas: React.FC = () => {
               text={`Image Size: ${appState?.imageScale?.toFixed(1)}x
 Grid Scale: ${appState?.scaleRatio || 50} px/ft
 Grid Size: ${GRID_SIZES[uiState.gridSizeIndex]} ft
-Zoom: ${(uiState.zoomLevel * 100).toFixed(0)}%
-(1 grid square = 1 foot)`}
+Zoom: ${(uiState.zoomLevel * 100).toFixed(0)}%`}
               fontSize={14}
               fill="black"
               padding={10}
@@ -266,6 +331,12 @@ Zoom: ${(uiState.zoomLevel * 100).toFixed(0)}%
           )}
         </Layer>
       </Stage>
+    );
+  };
+
+  return (
+    <div ref={containerRef} className="h-full w-full">
+      {renderContent()}
     </div>
   );
 };

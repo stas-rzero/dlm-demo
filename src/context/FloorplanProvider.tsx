@@ -31,26 +31,35 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
     }
   }, [appState?.selectedElementId]);
 
-  const handleImageUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAppState(prev => {
-        if (!prev) return null;
-        return {
+  const handleImageUpload = async (file: File) => {
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        setAppState(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            floorplanImageUrl: reader.result as string,
+            imageScale: 1,
+            imageRotation: 0,
+            scaleRatio: 50,
+          };
+        });
+        setUIState(prev => ({
           ...prev,
-          floorplanImageUrl: reader.result as string,
-          imageScale: 1,
-          imageRotation: 0,
-          scaleRatio: 50,
-        };
-      });
-      setUIState(prev => ({
-        ...prev,
-        zoomLevel: 1,
-        isCalibrating: true,
-      }));
-    };
-    reader.readAsDataURL(file);
+          zoomLevel: 1,
+          isCalibrating: true,
+        }));
+        resolve();
+      };
+
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleImageScale = (delta: number) => {
