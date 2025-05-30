@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import FloorplanCanvas from './components/FloorplanCanvas';
 import FloorplanUpload from './components/FloorplanUpload';
 import UIControls from './components/UIControls';
@@ -8,14 +7,8 @@ import { useFloorplan } from './context/useFloorplan';
 import { getFloorplanById, INITIAL_APP_STATE } from './utils/mockData';
 import LoadingOverlay from './components/LoadingOverlay';
 
-interface AppProps {
-  baseUrl: string;
-}
-
 const FloorplanApp: React.FC = () => {
   const { appState, setAppState, uiState } = useFloorplan();
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -24,13 +17,17 @@ const FloorplanApp: React.FC = () => {
         // Simulate API call to fetch data
         await new Promise(resolve => setTimeout(resolve, 1000));
 
+        // Get ID from hash (remove the # if present)
+        const id = window.location.hash.replace('#', '');
+
         if (id) {
           const floorplanData = getFloorplanById(id);
           if (floorplanData) {
             setAppState(floorplanData);
           } else {
             // If floorplan not found, redirect to root
-            navigate('/');
+            window.location.hash = '';
+            setAppState(INITIAL_APP_STATE);
           }
         } else {
           // If no ID provided, initialize with empty state
@@ -45,7 +42,7 @@ const FloorplanApp: React.FC = () => {
     };
 
     initializeApp();
-  }, [id, navigate, setAppState]);
+  }, [setAppState]);
 
   if (isLoading) {
     return <LoadingOverlay fullScreen message="Loading application..." />;
@@ -77,16 +74,11 @@ const FloorplanApp: React.FC = () => {
   );
 };
 
-const App: React.FC<AppProps> = ({ baseUrl }) => {
+const App: React.FC = () => {
   return (
-    <BrowserRouter basename={baseUrl}>
-      <FloorplanProvider>
-        <Routes>
-          <Route path="/" element={<FloorplanApp />} />
-          <Route path="/:id" element={<FloorplanApp />} />
-        </Routes>
-      </FloorplanProvider>
-    </BrowserRouter>
+    <FloorplanProvider>
+      <FloorplanApp />
+    </FloorplanProvider>
   );
 };
 
