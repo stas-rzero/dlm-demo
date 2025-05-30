@@ -15,7 +15,20 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
     zoomLevel: 1,
     isCalibrating: false,
     gridSizeIndex: 1,
+    isFullscreen: false,
   });
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setUIState(prev => ({
+        ...prev,
+        isFullscreen: !!document.fullscreenElement,
+      }));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   useEffect(() => {
     if (appState?.selectedElementId) {
@@ -112,6 +125,20 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
     }));
   };
 
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen({
+          navigationUI: 'hide',
+        });
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
+    }
+  };
+
   const value = {
     appState,
     setAppState,
@@ -122,6 +149,7 @@ export const FloorplanProvider: React.FC<FloorplanProviderProps> = ({ children }
     handleImageRotation,
     handleCalibrationComplete,
     handleZoom,
+    toggleFullscreen,
   };
 
   return <FloorplanContext.Provider value={value}>{children}</FloorplanContext.Provider>;

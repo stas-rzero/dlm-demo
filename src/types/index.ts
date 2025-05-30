@@ -71,4 +71,5 @@ export interface AppUIState {
   zoomLevel: number; // UI zoom level, resets to 1 on app restart
   isCalibrating: boolean;
   gridSizeIndex: number; // Index into GRID_SIZES array
+  isFullscreen: boolean;
 }

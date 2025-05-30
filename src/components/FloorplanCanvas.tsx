@@ -256,7 +256,8 @@ const FloorplanCanvas: React.FC = () => {
         draggable
         onDragMove={e => setPosition(e.target.position())}
         onClick={handleStageClick}
-        className="bg-white"
+        onTap={handleStageClick}
+        className="touch-none bg-white"
       >
         <Layer>
           {floorplanImage && (
@@ -366,7 +367,7 @@ Zoom: ${(uiState.zoomLevel * 100).toFixed(0)}%`}
   };
 
   return (
-    <div ref={containerRef} className="h-full w-full">
+    <div ref={containerRef} className="h-full w-full overflow-hidden">
       {renderContent()}
     </div>
   );

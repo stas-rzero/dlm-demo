@@ -11,6 +11,7 @@ interface FloorplanContextType {
   handleImageRotation: (delta: number) => void;
   handleCalibrationComplete: () => void;
   handleZoom: (delta: number) => void;
+  toggleFullscreen: () => Promise<void>;
 }
 
-export const FloorplanContext = createContext<FloorplanContextType | undefined>(undefined);
+export const FloorplanContext = createContext<FloorplanContextType | null>(null);
