@@ -58,7 +58,6 @@ export interface FloorplanAppState {
   selectedElementId: string | null;
   currentTypeToPlace: DeviceType | null;
   currentUnassignedDeviceIdToPlace: string | null;
-  isMeasuring: boolean;
   editSnapshot?: {
     devices: DeviceOrPlaceholder[];
     unassignedDevices: Device[];
